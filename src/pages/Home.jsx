@@ -1,0 +1,379 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import apiService from '../services/api';
+import ProductCard from '../components/products/ProductCard';
+import { 
+    ArrowRight, Award, Truck, Shield, Headphones, 
+    TrendingUp, Clock, Star, ChevronRight, 
+    Laptop, Smartphone, Watch, Speaker, Camera, 
+    Home as HomeIcon, Shirt, Car, Book, Dumbbell, 
+    Coffee, Gift, Package, Users, Globe, BarChart3,
+    ShoppingBag, Sparkles, Zap, CheckCircle,
+    Heart, Gamepad, HelpCircle, Leaf, RefreshCw
+} from 'lucide-react';
+
+const Home = () => {
+    const [featuredProducts, setFeaturedProducts] = useState([]);
+    const [newProducts, setNewProducts] = useState([]);
+    const [trendingProducts, setTrendingProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [categories, setCategories] = useState([]);
+    const [lastUpdated, setLastUpdated] = useState(new Date());
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [featuredData, newData, trendingData, categoriesData] = await Promise.all([
+                apiService.getProducts({ featured: true, per_page: 12 }),
+                apiService.getProducts({ sortBy: 'created_at', sortOrder: 'desc', per_page: 8 }),
+                apiService.getProducts({ sortBy: 'popularity', sortOrder: 'desc', per_page: 8 }),
+                apiService.getCategories()
+            ]);
+            
+            setFeaturedProducts(featuredData.products || []);
+            setNewProducts(newData.products || []);
+            setTrendingProducts(trendingData.products || []);
+            setCategories(categoriesData.categories || []);
+            setLastUpdated(new Date());
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        } finally {
+            setLoading(false);
+            setIsRefreshing(false);
+        }
+    };
+
+    const refresh = async () => {
+        setIsRefreshing(true);
+        await fetchData();
+    };
+
+    useEffect(() => {
+        fetchData();
+        
+        // Auto-refresh every 60 seconds
+        const interval = setInterval(() => {
+            fetchData();
+        }, 60000);
+        
+        return () => clearInterval(interval);
+    }, []);
+
+    // Category icons mapping
+    const categoryIcons = {
+        'Electronics': <Laptop className="w-8 h-8" />,
+        'Fashion': <Shirt className="w-8 h-8" />,
+        'Home & Living': <HomeIcon className="w-8 h-8" />,
+        'Sports & Outdoors': <Dumbbell className="w-8 h-8" />,
+        'Office & Stationery': <Book className="w-8 h-8" />,
+        'Automotive': <Car className="w-8 h-8" />,
+        'Beauty & Grooming': <Sparkles className="w-8 h-8" />,
+        'Travel Accessories': <Globe className="w-8 h-8" />,
+        'Gaming Accessories': <Gamepad className="w-8 h-8" />,
+        'Pet Accessories': <Heart className="w-8 h-8" />,
+        'Smart Home': <Smartphone className="w-8 h-8" />,
+        'Kitchen Accessories': <Coffee className="w-8 h-8" />,
+    };
+
+    const features = [
+        { icon: Shield, title: 'Quality Assurance', description: 'Verified suppliers and products' },
+        { icon: Truck, title: 'Fast Delivery', description: 'Quick shipping across Kenya' },
+        { icon: Headphones, title: '24/7 Support', description: 'Dedicated customer service' },
+        { icon: Leaf, title: 'Eco-Friendly', description: 'Sustainable business practices' },
+    ];
+
+    const getCategoryIcon = (category) => {
+        return categoryIcons[category] || <Package className="w-8 h-8" />;
+    };
+
+    return (
+        <div className="bg-white">
+            {/* Top Bar - Green Theme */}
+            <div className="bg-harykims-600 text-white border-b border-harykims-700 hidden md:block">
+                <div className="container-custom py-1.5">
+                    <div className="flex justify-between text-xs">
+                        <div className="flex items-center space-x-6">
+                            <span>Welcome to Harykims Intertech</span>
+                            <span className="font-semibold">Kenya's Premier B2B Marketplace</span>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                            <Link to="/become-seller" className="hover:text-harykims-100">Sell on Harykims</Link>
+                            <Link to="/help" className="hover:text-harykims-100">Help</Link>
+                            <Link to="/contact" className="hover:text-harykims-100">Contact</Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Hero Section - Green Gradient */}
+            <div className="bg-gradient-to-r from-harykims-700 to-harykims-500 text-white">
+                <div className="container-custom py-12 lg:py-16">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+                                Source Quality <br />
+                                <span className="text-harykims-200">Accessories</span> for Your Business
+                            </h1>
+                            <p className="text-lg text-harykims-100 mb-6 max-w-lg">
+                                Connect with verified suppliers and find the best products for your business needs in Kenya.
+                            </p>
+                            <div className="flex flex-wrap gap-4">
+                                <Link to="/products" className="bg-white text-harykims-700 hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold transition-colors flex items-center">
+                                    Start Sourcing <ArrowRight className="w-5 h-5 ml-2" />
+                                </Link>
+                                <Link to="/become-seller" className="bg-white/20 hover:bg-white/30 text-white px-8 py-3 rounded-lg font-semibold transition-colors border border-white/30 flex items-center">
+                                    <Package className="w-5 h-5 mr-2" />
+                                    Sell Now
+                                </Link>
+                            </div>
+                        </div>
+                        <div className="hidden lg:grid grid-cols-2 gap-4">
+                            <div className="bg-white/15 rounded-xl p-6 backdrop-blur-sm border border-white/10">
+                                <div className="text-3xl font-bold text-white">500+</div>
+                                <div className="text-sm text-harykims-100">Products Available</div>
+                            </div>
+                            <div className="bg-white/15 rounded-xl p-6 backdrop-blur-sm border border-white/10">
+                                <div className="text-3xl font-bold text-white">50+</div>
+                                <div className="text-sm text-harykims-100">Verified Suppliers</div>
+                            </div>
+                            <div className="bg-white/15 rounded-xl p-6 backdrop-blur-sm border border-white/10">
+                                <div className="text-3xl font-bold text-white">1000+</div>
+                                <div className="text-sm text-harykims-100">Happy Customers</div>
+                            </div>
+                            <div className="bg-white/15 rounded-xl p-6 backdrop-blur-sm border border-white/10">
+                                <div className="text-3xl font-bold text-white">24/7</div>
+                                <div className="text-sm text-harykims-100">Customer Support</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Categories - Green & White Theme */}
+            <div className="container-custom py-12">
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 className="text-2xl font-bold text-harykims-800">Shop by Category</h2>
+                        <p className="text-gray-600 text-sm mt-1">Find products in your preferred category</p>
+                    </div>
+                    <Link to="/products" className="text-harykims-600 hover:text-harykims-700 flex items-center text-sm font-medium">
+                        View All Categories <ChevronRight className="w-4 h-4 ml-1" />
+                    </Link>
+                </div>
+                
+                {categories.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        {categories.slice(0, 12).map((category, index) => (
+                            <Link
+                                key={index}
+                                to={`/products?category=${encodeURIComponent(category)}`}
+                                className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all text-center border border-gray-100 hover:border-harykims-300 group"
+                            >
+                                <div className="text-harykims-500 mb-2 group-hover:scale-110 transition-transform">
+                                    {getCategoryIcon(category)}
+                                </div>
+                                <h3 className="font-medium text-gray-800 text-sm">{category}</h3>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Features Bar - White with Green Accents */}
+            <div className="bg-harykims-50 border-y border-harykims-100 py-8">
+                <div className="container-custom">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        {features.map((feature, index) => (
+                            <div key={index} className="flex items-center space-x-3">
+                                <div className="bg-harykims-100 p-3 rounded-full">
+                                    <feature.icon className="w-5 h-5 text-harykims-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-sm text-gray-800">{feature.title}</h4>
+                                    <p className="text-xs text-gray-500">{feature.description}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Featured Products */}
+            <div className="container-custom py-12">
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 className="text-2xl font-bold text-harykims-800 flex items-center">
+                            <Sparkles className="w-6 h-6 text-harykims-500 mr-2" />
+                            Featured Products
+                        </h2>
+                        <p className="text-gray-600 text-sm mt-1">Handpicked quality products from trusted suppliers</p>
+                    </div>
+                    <Link to="/products?featured=true" className="text-harykims-600 hover:text-harykims-700 flex items-center text-sm font-medium">
+                        View All <ChevronRight className="w-4 h-4 ml-1" />
+                    </Link>
+                </div>
+                
+                {loading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {[...Array(8)].map((_, i) => (
+                            <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
+                                <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
+                                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {featuredProducts.map((product) => (
+                            <ProductCard key={product.id} product={product} />
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Trending Products */}
+            <div className="container-custom py-12 border-t border-gray-100">
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 className="text-2xl font-bold text-harykims-800 flex items-center">
+                            <TrendingUp className="w-6 h-6 text-harykims-500 mr-2" />
+                            Trending Now
+                        </h2>
+                        <p className="text-gray-600 text-sm mt-1">Most popular products this month</p>
+                    </div>
+                    <Link to="/products?sortBy=popularity" className="text-harykims-600 hover:text-harykims-700 flex items-center text-sm font-medium">
+                        View All <ChevronRight className="w-4 h-4 ml-1" />
+                    </Link>
+                </div>
+                
+                {loading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {[...Array(8)].map((_, i) => (
+                            <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
+                                <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
+                                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {trendingProducts.map((product) => (
+                            <ProductCard key={product.id} product={product} />
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* New Arrivals */}
+            <div className="container-custom py-12 border-t border-gray-100">
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 className="text-2xl font-bold text-harykims-800 flex items-center">
+                            <Clock className="w-6 h-6 text-harykims-500 mr-2" />
+                            New Arrivals
+                        </h2>
+                        <p className="text-gray-600 text-sm mt-1">Latest products added to our marketplace</p>
+                    </div>
+                    <Link to="/products?sortBy=created_at" className="text-harykims-600 hover:text-harykims-700 flex items-center text-sm font-medium">
+                        View All <ChevronRight className="w-4 h-4 ml-1" />
+                    </Link>
+                </div>
+                
+                {loading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {[...Array(8)].map((_, i) => (
+                            <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
+                                <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
+                                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {newProducts.map((product) => (
+                            <ProductCard key={product.id} product={product} />
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Call to Action - Green Theme */}
+            <div className="bg-gradient-to-r from-harykims-700 to-harykims-500 text-white py-16 mt-8">
+                <div className="container-custom text-center">
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Grow Your Business?</h2>
+                    <p className="text-lg text-harykims-100 mb-8 max-w-2xl mx-auto">
+                        Join thousands of businesses already sourcing and selling on Harykims Intertech.
+                        Start your journey today.
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-4">
+                        <Link to="/register" className="bg-white text-harykims-700 hover:bg-gray-100 px-8 py-3 rounded-lg font-semibold transition-colors">
+                            Get Started Free
+                        </Link>
+                        <Link to="/products" className="bg-transparent hover:bg-white/10 text-white px-8 py-3 rounded-lg font-semibold border border-white/30 transition-colors">
+                            Browse Products
+                        </Link>
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer - Green Theme */}
+            <footer className="bg-harykims-900 text-gray-300 py-12">
+                <div className="container-custom">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div>
+                            <h3 className="text-white font-bold text-lg mb-4 flex items-center">
+                                <Leaf className="w-5 h-5 text-harykims-400 mr-2" />
+                                Harykims Intertech
+                            </h3>
+                            <p className="text-sm">Kenya's premier B2B marketplace for quality accessories and tech products.</p>
+                            <div className="mt-4 flex space-x-4">
+                                <a href="#" className="hover:text-white">Facebook</a>
+                                <a href="#" className="hover:text-white">Twitter</a>
+                                <a href="#" className="hover:text-white">LinkedIn</a>
+                                <a href="#" className="hover:text-white">Instagram</a>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 className="text-white font-semibold mb-3">Quick Links</h4>
+                            <ul className="space-y-2 text-sm">
+                                <li><Link to="/products" className="hover:text-white">Products</Link></li>
+                                <li><Link to="/become-seller" className="hover:text-white">Become a Seller</Link></li>
+                                <li><Link to="/about" className="hover:text-white">About Us</Link></li>
+                                <li><Link to="/contact" className="hover:text-white">Contact</Link></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="text-white font-semibold mb-3">Customer Service</h4>
+                            <ul className="space-y-2 text-sm">
+                                <li><Link to="/help" className="hover:text-white">Help Center</Link></li>
+                                <li><Link to="/faq" className="hover:text-white">FAQ</Link></li>
+                                <li><Link to="/returns" className="hover:text-white">Returns Policy</Link></li>
+                                <li><Link to="/privacy" className="hover:text-white">Privacy Policy</Link></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="text-white font-semibold mb-3">Contact Info</h4>
+                            <ul className="space-y-2 text-sm">
+                                <li>📞 +254 700 123 456</li>
+                                <li>📧 info@harykims.com</li>
+                                <li>📍 Nairobi, Kenya</li>
+                                <li className="flex items-center space-x-2 mt-2">
+                                    <span className="bg-harykims-600 px-3 py-1 rounded-full text-xs font-semibold">✓ M-Pesa Paybill: 8379978</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="border-t border-harykims-800 mt-8 pt-8 text-sm text-center text-gray-400">
+                        <p>© 2024 Harykims Intertech. All rights reserved. Made with ❤️ in Kenya.</p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    );
+};
+
+export default Home;
