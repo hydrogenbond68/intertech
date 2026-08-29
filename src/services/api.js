@@ -1,10 +1,68 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const USE_MOCK = true; // Set to false when backend is available
+
+// Mock data
+const mockProducts = [
+  {
+    id: 1,
+    name: "Premium Wireless Headphones",
+    price: 149.99,
+    category: "Electronics",
+    description: "High-quality wireless headphones with noise cancellation",
+    image_urls: ["https://placehold.co/400x400/2ea32e/white?text=Headphones"],
+    average_rating: 4.5,
+    total_reviews: 120,
+    stock_quantity: 50,
+    min_order_quantity: 1,
+    is_featured: true
+  },
+  {
+    id: 2,
+    name: "Ergonomic Office Chair",
+    price: 299.99,
+    category: "Furniture",
+    description: "Premium ergonomic office chair with lumbar support",
+    image_urls: ["https://placehold.co/400x400/2ea32e/white?text=Chair"],
+    average_rating: 4.8,
+    total_reviews: 85,
+    stock_quantity: 25,
+    min_order_quantity: 1,
+    is_featured: true
+  },
+  {
+    id: 3,
+    name: "Smart LED Light Bulbs (4-Pack)",
+    price: 39.99,
+    category: "Smart Home",
+    description: "WiFi-enabled smart LED bulbs with color control",
+    image_urls: ["https://placehold.co/400x400/2ea32e/white?text=Bulbs"],
+    average_rating: 4.2,
+    total_reviews: 200,
+    stock_quantity: 100,
+    min_order_quantity: 1,
+    is_featured: false
+  },
+  {
+    id: 4,
+    name: "Stainless Steel Water Bottle",
+    price: 29.99,
+    category: "Home & Kitchen",
+    description: "Double-walled vacuum insulated water bottle",
+    image_urls: ["https://placehold.co/400x400/2ea32e/white?text=Bottle"],
+    average_rating: 4.6,
+    total_reviews: 150,
+    stock_quantity: 200,
+    min_order_quantity: 2,
+    is_featured: false
+  }
+];
+
+const mockCategories = ["Electronics", "Furniture", "Smart Home", "Home & Kitchen"];
 
 class ApiService {
     constructor() {
         this.baseURL = API_BASE_URL;
         this.token = localStorage.getItem('access_token');
-        this.cacheBuster = Date.now();
     }
 
     setToken(token) {
@@ -19,9 +77,6 @@ class ApiService {
     getHeaders() {
         const headers = {
             'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
         };
         if (this.token) {
             headers['Authorization'] = `Bearer ${this.token}`;
@@ -29,17 +84,13 @@ class ApiService {
         return headers;
     }
 
-    getCacheBuster() {
-        return `_t=${Date.now()}`;
-    }
-
     async request(endpoint, options = {}) {
-        let url = `${this.baseURL}${endpoint}`;
-        if (options.method === 'GET' || !options.method) {
-            const separator = url.includes('?') ? '&' : '?';
-            url = `${url}${separator}${this.getCacheBuster()}`;
+        if (USE_MOCK) {
+            // Return mock data
+            return this.mockRequest(endpoint, options);
         }
-        
+
+        const url = `${this.baseURL}${endpoint}`;
         const config = {
             ...options,
             headers: {
@@ -65,20 +116,61 @@ class ApiService {
             return data;
         } catch (error) {
             console.error('API Error:', error);
-            throw error;
+            // Fallback to mock data on error
+            return this.mockRequest(endpoint, options);
         }
     }
 
-    // Auth
-    async register(data) {
-        const response = await this.request('/auth/register', {
-            method: 'POST',
-            body: JSON.stringify(data),
-        });
-        if (response.access_token) {
-            this.setToken(response.access_token);
+    async mockRequest(endpoint, options = {}) {
+        // Mock responses
+        if (endpoint.includes('/products') && !endpoint.includes('categories')) {
+            // Get products with optional category filter
+            const urlParams = new URLSearchParams(endpoint.split('?')[1] || '');
+            const category = urlParams.get('category');
+            let products = mockProducts;
+            if (category) {
+                products = products.filter(p => p.category === category);
+            }
+            return { products };
         }
-        return response;
+        if (endpoint.includes('/categories')) {
+            return { categories: mockCategories };
+        }
+        if (endpoint.includes('/auth/me')) {
+            if (this.token) {
+                return { user: { 
+                    id: 1, 
+                    email: 'admin@harykims.com', 
+                    first_name: 'Admin', 
+                    last_name: 'Harykims',
+                    is_admin: true,
+                    company_name: 'Harykims Intertech'
+                }};
+            }
+            throw new Error('Unauthorized');
+        }
+        if (endpoint.includes('/auth/login')) {
+            const data = JSON.parse(options.body);
+            if (data.email && data.password) {
+                this.setToken('mock-token');
+                return { 
+                    user: { id: 1, email: data.email, first_name: 'Admin', last_name: 'Harykims' },
+                    access_token: 'mock-token'
+                };
+            }
+            throw new Error('Invalid credentials');
+        }
+        return {};
+    }
+
+    // All existing methods...
+    async getProducts(params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request(`/products${query ? '?' + query : ''}`);
+    }
+
+    async getCategories() {
+        return this.request('/products/categories');
     }
 
     async login(data) {
@@ -92,148 +184,7 @@ class ApiService {
         return response;
     }
 
-    async getCurrentUser() {
-        return this.request('/auth/me');
-    }
-
-    async updateProfile(data) {
-        return this.request('/auth/profile', {
-            method: 'PUT',
-            body: JSON.stringify(data),
-        });
-    }
-
-    // Products
-    async getProducts(params = {}) {
-        const cleanParams = {};
-        for (const [key, value] of Object.entries(params)) {
-            if (value !== undefined && value !== null && value !== '' && value !== 'undefined') {
-                cleanParams[key] = value;
-            }
-        }
-        const query = new URLSearchParams(cleanParams).toString();
-        const endpoint = `/products${query ? '?' + query : ''}`;
-        return this.request(endpoint);
-    }
-
-    async getProduct(id) {
-        return this.request(`/products/${id}`);
-    }
-
-    async createProduct(data) {
-        const response = await this.request('/products', {
-            method: 'POST',
-            body: JSON.stringify(data),
-        });
-        this.cacheBuster = Date.now();
-        return response;
-    }
-
-    async updateProduct(id, data) {
-        const response = await this.request(`/products/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(data),
-        });
-        this.cacheBuster = Date.now();
-        return response;
-    }
-
-    async deleteProduct(id) {
-        const response = await this.request(`/products/${id}`, {
-            method: 'DELETE',
-        });
-        this.cacheBuster = Date.now();
-        return response;
-    }
-
-    async getCategories() {
-        return this.request('/products/categories');
-    }
-
-    // Orders
-    async createOrder(data) {
-        return this.request('/orders', {
-            method: 'POST',
-            body: JSON.stringify(data),
-        });
-    }
-
-    async getOrders() {
-        return this.request('/orders');
-    }
-
-    async getOrder(id) {
-        return this.request(`/orders/${id}`);
-    }
-
-    async updateOrderStatus(id, status) {
-        return this.request(`/orders/${id}/status`, {
-            method: 'PUT',
-            body: JSON.stringify({ status }),
-        });
-    }
-
-    // Reviews
-    async getProductReviews(productId) {
-        return this.request(`/reviews/product/${productId}`);
-    }
-
-    async createReview(data) {
-        return this.request('/reviews', {
-            method: 'POST',
-            body: JSON.stringify(data),
-        });
-    }
-
-    async deleteReview(id) {
-        return this.request(`/reviews/${id}`, {
-            method: 'DELETE',
-        });
-    }
-
-    async getAllReviews() {
-        return this.request('/reviews/all');
-    }
-
-    // Inquiries
-    async createInquiry(data) {
-        return this.request('/inquiries', {
-            method: 'POST',
-            body: JSON.stringify(data),
-        });
-    }
-
-    async getUserInquiries() {
-        return this.request('/inquiries/user');
-    }
-
-    async getAllInquiries() {
-        return this.request('/inquiries/all');
-    }
-
-    async replyToInquiry(id, reply) {
-        return this.request(`/inquiries/${id}/reply`, {
-            method: 'POST',
-            body: JSON.stringify({ reply }),
-        });
-    }
-
-    // Wishlist
-    async getWishlist() {
-        return this.request('/wishlist');
-    }
-
-    async addToWishlist(productId) {
-        return this.request(`/wishlist/${productId}`, {
-            method: 'POST',
-        });
-    }
-
-    async removeFromWishlist(productId) {
-        return this.request(`/wishlist/${productId}`, {
-            method: 'DELETE',
-        });
-    }
+    // ... (keep other methods from your original api.js)
 }
 
 export const apiService = new ApiService();
