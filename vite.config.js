@@ -5,12 +5,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    open: true,
-    hmr: {
-      overlay: true
-    }
+    open: true
   },
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom']
+  build: {
+    outDir: 'dist',
+    sourcemap: true
   }
 })
