@@ -3,12 +3,16 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import Navbar from './components/common/Navbar';
+import WhatsAppButton from './components/common/WhatsAppButton';
 import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Profile from './pages/Profile';
+import About from './pages/About';
+import Contact from './pages/Contact';
 import BecomeSeller from './pages/BecomeSeller';
 import AdminDashboard from './components/admin/AdminDashboard';
 import { useAuth } from './contexts/AuthContext';
@@ -63,6 +67,7 @@ function App() {
           <CartProvider>
             <div className="min-h-screen bg-gray-50">
               <Navbar />
+              <WhatsAppButton />
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/products" element={<Products />} />
@@ -70,7 +75,18 @@ function App() {
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/become-seller" element={<BecomeSeller />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/profile" element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                } />
+                <Route path="/become-seller" element={
+                  <ProtectedRoute>
+                    <BecomeSeller />
+                  </ProtectedRoute>
+                } />
                 <Route path="/admin/*" element={
                   <AdminRoute>
                     <AdminDashboard />

@@ -9,7 +9,8 @@ import {
     Home as HomeIcon, Shirt, Car, Book, Dumbbell, 
     Coffee, Gift, Package, Users, Globe, BarChart3,
     ShoppingBag, Sparkles, Zap, CheckCircle,
-    Heart, Gamepad, HelpCircle, Leaf, RefreshCw
+    Heart, Gamepad, HelpCircle, Leaf, RefreshCw,
+    MessageCircle
 } from 'lucide-react';
 
 const Home = () => {
@@ -52,7 +53,6 @@ const Home = () => {
     useEffect(() => {
         fetchData();
         
-        // Auto-refresh every 60 seconds
         const interval = setInterval(() => {
             fetchData();
         }, 60000);
@@ -99,7 +99,7 @@ const Home = () => {
                         </div>
                         <div className="flex items-center space-x-4">
                             <Link to="/become-seller" className="hover:text-harykims-100">Sell on Harykims</Link>
-                            <Link to="/help" className="hover:text-harykims-100">Help</Link>
+                            <Link to="/about" className="hover:text-harykims-100">About</Link>
                             <Link to="/contact" className="hover:text-harykims-100">Contact</Link>
                         </div>
                     </div>
@@ -320,7 +320,7 @@ const Home = () => {
                 </div>
             </div>
 
-            {/* Footer - Green Theme */}
+            {/* Footer - Green Theme with WhatsApp */}
             <footer className="bg-harykims-900 text-gray-300 py-12">
                 <div className="container-custom">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -362,7 +362,13 @@ const Home = () => {
                                 <li>📧 info@harykims.com</li>
                                 <li>📍 Nairobi, Kenya</li>
                                 <li className="flex items-center space-x-2 mt-2">
-                                    <span className="bg-harykims-600 px-3 py-1 rounded-full text-xs font-semibold">✓ M-Pesa Paybill: 8379978</span>
+                                    <span className="bg-harykims-600 px-3 py-1 rounded-full text-xs font-semibold">✓ M-Pesa: 8379978</span>
+                                </li>
+                                <li className="flex items-center space-x-2 mt-2">
+                                    <span className="bg-green-600 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2">
+                                        <MessageCircle className="w-3 h-3" />
+                                        WhatsApp: 0118 477 340
+                                    </span>
                                 </li>
                             </ul>
                         </div>

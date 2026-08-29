@@ -29,13 +29,11 @@ class ApiService {
         return headers;
     }
 
-    // Generate cache-busting timestamp
     getCacheBuster() {
         return `_t=${Date.now()}`;
     }
 
     async request(endpoint, options = {}) {
-        // Add cache-busting for GET requests
         let url = `${this.baseURL}${endpoint}`;
         if (options.method === 'GET' || !options.method) {
             const separator = url.includes('?') ? '&' : '?';
@@ -99,13 +97,13 @@ class ApiService {
     }
 
     async updateProfile(data) {
-        return this.request('/auth/update-profile', {
+        return this.request('/auth/profile', {
             method: 'PUT',
             body: JSON.stringify(data),
         });
     }
 
-    // Products with cache-busting
+    // Products
     async getProducts(params = {}) {
         const cleanParams = {};
         for (const [key, value] of Object.entries(params)) {
@@ -127,7 +125,6 @@ class ApiService {
             method: 'POST',
             body: JSON.stringify(data),
         });
-        // Clear cache after creating
         this.cacheBuster = Date.now();
         return response;
     }
@@ -137,7 +134,6 @@ class ApiService {
             method: 'PUT',
             body: JSON.stringify(data),
         });
-        // Clear cache after updating
         this.cacheBuster = Date.now();
         return response;
     }
@@ -146,7 +142,6 @@ class ApiService {
         const response = await this.request(`/products/${id}`, {
             method: 'DELETE',
         });
-        // Clear cache after deleting
         this.cacheBuster = Date.now();
         return response;
     }

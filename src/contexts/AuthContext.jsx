@@ -18,25 +18,37 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
-    if (token) {
-      apiService.setToken(token);
-      loadUser();
+    const savedUser = localStorage.getItem('user');
+    
+    if (token && savedUser) {
+      try {
+        const userData = JSON.parse(savedUser);
+        apiService.setToken(token);
+        setUser(userData);
+        setLoading(false);
+        verifyToken();
+      } catch (e) {
+        console.error('Error parsing saved user:', e);
+        localStorage.removeItem('user');
+        localStorage.removeItem('access_token');
+        setLoading(false);
+      }
     } else {
       setLoading(false);
     }
   }, []);
 
-  const loadUser = async () => {
+  const verifyToken = async () => {
     try {
       const data = await apiService.getCurrentUser();
       setUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
     } catch (error) {
-      console.error('Error loading user:', error);
-      setUser(null);
-      apiService.setToken(null);
+      console.error('Token verification failed:', error);
+      localStorage.removeItem('user');
       localStorage.removeItem('access_token');
-    } finally {
-      setLoading(false);
+      apiService.setToken(null);
+      setUser(null);
     }
   };
 
@@ -44,6 +56,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await apiService.login({ email, password });
       setUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('access_token', data.access_token);
+      apiService.setToken(data.access_token);
       setError(null);
       return { success: true, user: data.user };
     } catch (error) {
@@ -56,6 +71,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await apiService.register(userData);
       setUser(data.user);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('access_token', data.access_token);
+      apiService.setToken(data.access_token);
       setError(null);
       return { success: true, user: data.user };
     } catch (error) {
@@ -67,15 +85,20 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     apiService.setToken(null);
     setUser(null);
+    localStorage.removeItem('user');
     localStorage.removeItem('access_token');
   };
 
   const updateProfile = async (data) => {
     try {
       const response = await apiService.updateProfile(data);
+      // Update user state
       setUser(response.user);
+      // Update localStorage
+      localStorage.setItem('user', JSON.stringify(response.user));
       return { success: true, user: response.user };
     } catch (error) {
+      console.error('Profile update failed:', error);
       return { success: false, error: error.message };
     }
   };

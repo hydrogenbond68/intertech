@@ -5,7 +5,8 @@ import { useCart } from '../../contexts/CartContext';
 import { 
     Search, ShoppingCart, User, LogOut, LogIn, 
     UserPlus, Menu, X, ChevronDown, Package, 
-    LayoutDashboard, Store, Heart, Leaf
+    LayoutDashboard, Store, Heart, Leaf, UserCircle,
+    Info, Mail, HelpCircle
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -62,6 +63,16 @@ const Navbar = () => {
                     </div>
 
                     <div className="flex items-center space-x-4">
+                        {/* Desktop Navigation Links */}
+                        <div className="hidden md:flex items-center space-x-4">
+                            <Link to="/about" className="text-gray-600 hover:text-harykims-600 transition-colors text-sm">
+                                About
+                            </Link>
+                            <Link to="/contact" className="text-gray-600 hover:text-harykims-600 transition-colors text-sm">
+                                Contact
+                            </Link>
+                        </div>
+
                         {isAuthenticated && (
                             <Link to="/wishlist" className="hidden md:flex items-center text-gray-600 hover:text-harykims-600 transition-colors">
                                 <Heart className="w-6 h-6" />
@@ -90,6 +101,10 @@ const Navbar = () => {
                                         <p className="font-semibold text-gray-800">{user?.first_name} {user?.last_name}</p>
                                         <p className="text-sm text-gray-500">{user?.email}</p>
                                     </div>
+                                    <Link to="/profile" className="flex items-center px-4 py-2 hover:bg-harykims-50 text-gray-700">
+                                        <UserCircle className="w-4 h-4 mr-2 text-harykims-600" />
+                                        My Profile
+                                    </Link>
                                     {isAdmin && (
                                         <Link to="/admin" className="flex items-center px-4 py-2 hover:bg-harykims-50 text-gray-700">
                                             <LayoutDashboard className="w-4 h-4 mr-2 text-harykims-600" />
@@ -100,13 +115,22 @@ const Navbar = () => {
                                         <Store className="w-4 h-4 mr-2 text-harykims-600" />
                                         Become a Seller
                                     </Link>
-                                    <Link to="/profile" className="flex items-center px-4 py-2 hover:bg-harykims-50 text-gray-700">
-                                        <User className="w-4 h-4 mr-2 text-harykims-600" />
-                                        My Profile
-                                    </Link>
                                     <Link to="/orders" className="flex items-center px-4 py-2 hover:bg-harykims-50 text-gray-700">
                                         <Package className="w-4 h-4 mr-2 text-harykims-600" />
                                         My Orders
+                                    </Link>
+                                    <div className="border-t border-gray-100 my-1"></div>
+                                    <Link to="/about" className="flex items-center px-4 py-2 hover:bg-harykims-50 text-gray-700">
+                                        <Info className="w-4 h-4 mr-2 text-harykims-600" />
+                                        About Us
+                                    </Link>
+                                    <Link to="/contact" className="flex items-center px-4 py-2 hover:bg-harykims-50 text-gray-700">
+                                        <Mail className="w-4 h-4 mr-2 text-harykims-600" />
+                                        Contact
+                                    </Link>
+                                    <Link to="/help" className="flex items-center px-4 py-2 hover:bg-harykims-50 text-gray-700">
+                                        <HelpCircle className="w-4 h-4 mr-2 text-harykims-600" />
+                                        Help Center
                                     </Link>
                                     <button
                                         onClick={handleLogout}
@@ -161,12 +185,28 @@ const Navbar = () => {
             {isMenuOpen && (
                 <div className="md:hidden bg-white border-t border-gray-100">
                     <div className="container-custom py-3 space-y-2">
+                        {/* Quick Links */}
+                        <Link to="/about" className="flex items-center px-4 py-2 hover:bg-harykims-50 rounded-lg text-gray-700">
+                            <Info className="w-5 h-5 mr-3 text-harykims-600" />
+                            About Us
+                        </Link>
+                        <Link to="/contact" className="flex items-center px-4 py-2 hover:bg-harykims-50 rounded-lg text-gray-700">
+                            <Mail className="w-5 h-5 mr-3 text-harykims-600" />
+                            Contact Us
+                        </Link>
+                        
+                        <div className="border-t border-gray-100 my-2"></div>
+                        
                         {isAuthenticated ? (
                             <>
-                                <div className="px-4 py-2 border-b border-gray-100">
+                                <div className="px-4 py-2">
                                     <p className="font-semibold text-gray-800">{user?.first_name} {user?.last_name}</p>
                                     <p className="text-sm text-gray-500">{user?.email}</p>
                                 </div>
+                                <Link to="/profile" className="flex items-center px-4 py-2 hover:bg-harykims-50 rounded-lg text-gray-700">
+                                    <UserCircle className="w-5 h-5 mr-3 text-harykims-600" />
+                                    My Profile
+                                </Link>
                                 {isAdmin && (
                                     <Link to="/admin" className="flex items-center px-4 py-2 hover:bg-harykims-50 rounded-lg text-gray-700">
                                         <LayoutDashboard className="w-5 h-5 mr-3 text-harykims-600" />
@@ -176,10 +216,6 @@ const Navbar = () => {
                                 <Link to="/become-seller" className="flex items-center px-4 py-2 hover:bg-harykims-50 rounded-lg text-gray-700">
                                     <Store className="w-5 h-5 mr-3 text-harykims-600" />
                                     Become a Seller
-                                </Link>
-                                <Link to="/profile" className="flex items-center px-4 py-2 hover:bg-harykims-50 rounded-lg text-gray-700">
-                                    <User className="w-5 h-5 mr-3 text-harykims-600" />
-                                    My Profile
                                 </Link>
                                 <Link to="/orders" className="flex items-center px-4 py-2 hover:bg-harykims-50 rounded-lg text-gray-700">
                                     <Package className="w-5 h-5 mr-3 text-harykims-600" />
