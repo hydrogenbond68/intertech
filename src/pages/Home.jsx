@@ -331,10 +331,10 @@ const Home = () => {
                             </h3>
                             <p className="text-sm">Kenya's premier B2B marketplace for quality accessories and tech products.</p>
                             <div className="mt-4 flex space-x-4">
-                                <a href="#" className="hover:text-white">Facebook</a>
-                                <a href="#" className="hover:text-white">Twitter</a>
-                                <a href="#" className="hover:text-white">LinkedIn</a>
-                                <a href="#" className="hover:text-white">Instagram</a>
+                                <a href="https://www.tiktok.com/@harykimsintertech/" className="hover:text-white">TikTok</a>
+                                <a href="https://www.facebook.com/harykimsintertech/" className="hover:text-white">Facebook</a>
+                                <a href="https://www.instagram.com/harykimsintertech/" className="hover:text-white">Instagram</a>
+                                <a href="https://x.com/harykimsint" className="hover:text-white">Twitter (X)</a>
                             </div>
                         </div>
                         <div>
@@ -358,11 +358,10 @@ const Home = () => {
                         <div>
                             <h4 className="text-white font-semibold mb-3">Contact Info</h4>
                             <ul className="space-y-2 text-sm">
-                                <li>📞 +254 700 123 456</li>
-                                <li>📧 info@harykims.com</li>
+                                <li>📞 +254 714 818 100 / +254118 477 340</li>
+                                <li>📧 harykimsintertech.com</li>
                                 <li>📍 Nairobi, Kenya</li>
                                 <li className="flex items-center space-x-2 mt-2">
-                                    <span className="bg-harykims-600 px-3 py-1 rounded-full text-xs font-semibold">✓ M-Pesa: 8379978</span>
                                 </li>
                                 <li className="flex items-center space-x-2 mt-2">
                                     <span className="bg-green-600 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2">
