@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { 
     User, Mail, Phone, MapPin, Building, 
     Save, Camera, Edit2, 
-    CheckCircle, AlertCircle, Store, Package, Heart, X
+    CheckCircle, AlertCircle, Store, Package, Heart, X, RefreshCw
 } from 'lucide-react';
 
 const Profile = () => {
@@ -25,6 +25,7 @@ const Profile = () => {
     const [error, setError] = useState('');
     const [editMode, setEditMode] = useState(false);
     const [imagePreview, setImagePreview] = useState(null);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     // Initialize form with user data
     useEffect(() => {
@@ -41,7 +42,7 @@ const Profile = () => {
             });
             setImagePreview(user.profile_image || null);
         }
-    }, [user]);
+    }, [user, refreshKey]);
 
     // Redirect if not authenticated
     useEffect(() => {
@@ -89,7 +90,7 @@ const Profile = () => {
         try {
             console.log('Submitting profile data:', formData);
             
-            // Prepare data for submission
+            // Prepare data for submission - only include fields that have changed
             const submitData = {
                 first_name: formData.first_name,
                 last_name: formData.last_name,
@@ -105,6 +106,8 @@ const Profile = () => {
             if (result.success) {
                 setSuccess(true);
                 setEditMode(false);
+                // Refresh the page data
+                setRefreshKey(prev => prev + 1);
                 setTimeout(() => setSuccess(false), 3000);
             } else {
                 setError(result.error || 'Failed to update profile');

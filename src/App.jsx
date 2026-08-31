@@ -16,6 +16,8 @@ import Contact from './pages/Contact';
 import BecomeSeller from './pages/BecomeSeller';
 import AdminDashboard from './components/admin/AdminDashboard';
 import { useAuth } from './contexts/AuthContext';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -77,6 +79,8 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/profile" element={
                   <ProtectedRoute>
                     <Profile />

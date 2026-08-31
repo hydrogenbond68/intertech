@@ -42,28 +42,28 @@ const Contact = () => {
         {
             icon: Phone,
             title: 'Phone',
-            details: ['+254 700 123 456', '+254 700 789 012'],
+            details: ['+254 714 818 100', '+254 118 477 340'],
             color: 'bg-blue-50',
             iconColor: 'text-blue-600'
         },
         {
             icon: Mail,
             title: 'Email',
-            details: ['info@harykims.com', 'support@harykims.com'],
+            details: ['harykimsintertech.com', 'hkintertech22@gmail.com'],
             color: 'bg-green-50',
             iconColor: 'text-green-600'
         },
         {
             icon: MapPin,
             title: 'Address',
-            details: ['Nairobi, Kenya', 'P.O. Box 12345-00100'],
+            details: ['Wangige, Kabete Makumi building', 'P.O. Box 183-00614'],
             color: 'bg-red-50',
             iconColor: 'text-red-600'
         },
         {
             icon: Clock,
             title: 'Working Hours',
-            details: ['Mon-Fri: 8:00 AM - 6:00 PM', 'Sat: 9:00 AM - 2:00 PM'],
+            details: ['Mon-Fri: 8:00 AM - 8:00 PM', 'Sun: 9:00 AM - 8:00 PM'],
             color: 'bg-purple-50',
             iconColor: 'text-purple-600'
         }

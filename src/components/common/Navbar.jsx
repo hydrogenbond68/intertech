@@ -34,10 +34,18 @@ const Navbar = () => {
         <nav className="bg-white shadow-md sticky top-0 z-50 border-b border-harykims-100">
             <div className="container-custom">
                 <div className="flex items-center justify-between h-16">
+                    {/* Logo */}
                     <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
-                        <div className="bg-harykims-600 p-1.5 rounded-lg">
-                            <Leaf className="w-6 h-6 text-white" />
-                        </div>
+                        <img 
+                            src="assets/logo.jpeg" 
+                            alt="Harykims Intertech" 
+                            className="h-10 w-auto object-contain block"
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.alt = '';
+                                e.target.className = 'hidden';
+                            }}
+                        />
                         <span className="text-xl font-bold tracking-tight">
                             <span className="text-harykims-700">Harykims</span>
                             <span className="text-harykims-500">Intertech</span>
@@ -63,13 +71,12 @@ const Navbar = () => {
                     </div>
 
                     <div className="flex items-center space-x-4">
-                        {/* Desktop Navigation Links */}
                         <div className="hidden md:flex items-center space-x-4">
                             <Link to="/about" className="text-gray-600 hover:text-harykims-600 transition-colors text-sm">
-                                About
+                                
                             </Link>
                             <Link to="/contact" className="text-gray-600 hover:text-harykims-600 transition-colors text-sm">
-                                Contact
+                                
                             </Link>
                         </div>
 
@@ -126,11 +133,7 @@ const Navbar = () => {
                                     </Link>
                                     <Link to="/contact" className="flex items-center px-4 py-2 hover:bg-harykims-50 text-gray-700">
                                         <Mail className="w-4 h-4 mr-2 text-harykims-600" />
-                                        Contact
-                                    </Link>
-                                    <Link to="/help" className="flex items-center px-4 py-2 hover:bg-harykims-50 text-gray-700">
-                                        <HelpCircle className="w-4 h-4 mr-2 text-harykims-600" />
-                                        Help Center
+                                        
                                     </Link>
                                     <button
                                         onClick={handleLogout}
@@ -185,14 +188,13 @@ const Navbar = () => {
             {isMenuOpen && (
                 <div className="md:hidden bg-white border-t border-gray-100">
                     <div className="container-custom py-3 space-y-2">
-                        {/* Quick Links */}
                         <Link to="/about" className="flex items-center px-4 py-2 hover:bg-harykims-50 rounded-lg text-gray-700">
                             <Info className="w-5 h-5 mr-3 text-harykims-600" />
-                            About Us
+                            
                         </Link>
                         <Link to="/contact" className="flex items-center px-4 py-2 hover:bg-harykims-50 rounded-lg text-gray-700">
                             <Mail className="w-5 h-5 mr-3 text-harykims-600" />
-                            Contact Us
+                            
                         </Link>
                         
                         <div className="border-t border-gray-100 my-2"></div>

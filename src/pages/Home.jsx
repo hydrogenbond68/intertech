@@ -10,8 +10,16 @@ import {
     Coffee, Gift, Package, Users, Globe, BarChart3,
     ShoppingBag, Sparkles, Zap, CheckCircle,
     Heart, Gamepad, HelpCircle, Leaf, RefreshCw,
-    MessageCircle
+    MessageCircle, Instagram, Facebook, Twitter, 
+    Youtube, Linkedin, Send, Music2, Share2
 } from 'lucide-react';
+
+// Custom TikTok icon component (since it might not be available in all versions)
+const TikTokIcon = ({ className = "w-5 h-5" }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+    </svg>
+);
 
 const Home = () => {
     const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -83,6 +91,35 @@ const Home = () => {
         { icon: Leaf, title: 'Eco-Friendly', description: 'Sustainable business practices' },
     ];
 
+    // Social Media Links
+    const socialLinks = [
+        { 
+            icon: TikTokIcon, 
+            name: 'TikTok', 
+            url: 'https://www.tiktok.com/@harykimsintertech/',
+            color: 'hover:text-gray-300'
+        },
+        { 
+            icon: Instagram, 
+            name: 'Instagram', 
+            url: 'https://www.instagram.com/harykimsintertech/',
+            color: 'hover:text-pink-400'
+        },
+        { 
+            icon: Facebook, 
+            name: 'Facebook', 
+            url: 'https://www.facebook.com/harykimsintertech/',
+            color: 'hover:text-blue-400'
+        },
+        { 
+            icon: Twitter, 
+            name: 'Twitter (X)', 
+            url: 'https://x.com/harykimsint',
+            color: 'hover:text-gray-300'
+        },
+
+    ];
+
     const getCategoryIcon = (category) => {
         return categoryIcons[category] || <Package className="w-8 h-8" />;
     };
@@ -106,11 +143,23 @@ const Home = () => {
                 </div>
             </div>
 
-            {/* Hero Section - Green Gradient */}
+            {/* Hero Section - Green Gradient with Logo */}
             <div className="bg-gradient-to-r from-harykims-700 to-harykims-500 text-white">
                 <div className="container-custom py-12 lg:py-16">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                         <div>
+                            {/* Logo in Hero */}
+                            <div className="mb-6">
+                                <img 
+                                    src="/logo.jpeg" 
+                                    alt="Harykims Intertech" 
+                                    className="h-16 w-auto object-contain"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.style.display = 'none';
+                                    }}
+                                />
+                            </div>
                             <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
                                 Source Quality <br />
                                 <span className="text-harykims-200">Accessories</span> for Your Business
@@ -126,6 +175,23 @@ const Home = () => {
                                     <Package className="w-5 h-5 mr-2" />
                                     Sell Now
                                 </Link>
+                            </div>
+
+                            {/* Social Media Icons in Hero */}
+                            <div className="mt-8 flex items-center space-x-4">
+                                <span className="text-white/70 text-sm">Follow us:</span>
+                                {socialLinks.map((social, index) => (
+                                    <a
+                                        key={index}
+                                        href={social.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={`text-white/70 hover:text-white transition-all duration-300 hover:scale-110 ${social.color}`}
+                                        aria-label={social.name}
+                                    >
+                                        <social.icon className="w-5 h-5" />
+                                    </a>
+                                ))}
                             </div>
                         </div>
                         <div className="hidden lg:grid grid-cols-2 gap-4">
@@ -320,21 +386,66 @@ const Home = () => {
                 </div>
             </div>
 
-            {/* Footer - Green Theme with WhatsApp */}
+            {/* Footer - Green Theme with Social Media Icons */}
             <footer className="bg-harykims-900 text-gray-300 py-12">
                 <div className="container-custom">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         <div>
-                            <h3 className="text-white font-bold text-lg mb-4 flex items-center">
-                                <Leaf className="w-5 h-5 text-harykims-400 mr-2" />
-                                Harykims Intertech
-                            </h3>
+                            <div className="flex items-center space-x-3 mb-4">
+                                <img 
+                                    src="/logo.jpeg" 
+                                    alt="Harykims Intertech" 
+                                    className="h-12 w-auto object-contain"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.style.display = 'none';
+                                    }}
+                                />
+                                <span className="text-white font-bold text-lg">
+                                    <span className="text-harykims-400">Harykims</span>
+                                    <span className="text-gray-300">Intertech</span>
+                                </span>
+                            </div>
                             <p className="text-sm">Kenya's premier B2B marketplace for quality accessories and tech products.</p>
-                            <div className="mt-4 flex space-x-4">
-                                <a href="https://www.tiktok.com/@harykimsintertech/" className="hover:text-white">TikTok</a>
-                                <a href="https://www.facebook.com/harykimsintertech/" className="hover:text-white">Facebook</a>
-                                <a href="https://www.instagram.com/harykimsintertech/" className="hover:text-white">Instagram</a>
-                                <a href="https://x.com/harykimsint" className="hover:text-white">Twitter (X)</a>
+                            
+                            {/* Social Media Icons in Footer */}
+                            <div className="mt-4 flex space-x-3">
+                                <a 
+                                    href="https://www.tiktok.com/@harykimsintertech/" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="bg-white/10 p-2 rounded-full hover:bg-white/20 transition-all duration-300 hover:scale-110"
+                                    aria-label="TikTok"
+                                >
+                                    <TikTokIcon className="w-5 h-5" />
+                                </a>
+                                <a 
+                                    href="https://www.instagram.com/harykimsintertech/" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="bg-white/10 p-2 rounded-full hover:bg-white/20 transition-all duration-300 hover:scale-110"
+                                    aria-label="Instagram"
+                                >
+                                    <Instagram className="w-5 h-5" />
+                                </a>
+                                <a 
+                                    href="https://www.facebook.com/harykimsintertech/" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="bg-white/10 p-2 rounded-full hover:bg-white/20 transition-all duration-300 hover:scale-110"
+                                    aria-label="Facebook"
+                                >
+                                    <Facebook className="w-5 h-5" />
+                                </a>
+                                <a 
+                                    href="https://x.com/harykimsint" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="bg-white/10 p-2 rounded-full hover:bg-white/20 transition-all duration-300 hover:scale-110"
+                                    aria-label="Twitter (X)"
+                                >
+                                    <Twitter className="w-5 h-5" />
+                                </a>
                             </div>
                         </div>
                         <div>
@@ -361,8 +472,6 @@ const Home = () => {
                                 <li>📞 +254 714 818 100 / +254118 477 340</li>
                                 <li>📧 harykimsintertech.com</li>
                                 <li>📍 Nairobi, Kenya</li>
-                                <li className="flex items-center space-x-2 mt-2">
-                                </li>
                                 <li className="flex items-center space-x-2 mt-2">
                                     <span className="bg-green-600 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-2">
                                         <MessageCircle className="w-3 h-3" />

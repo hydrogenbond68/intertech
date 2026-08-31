@@ -4,7 +4,9 @@ import apiService from '../../services/api';
 import { 
     Package, ShoppingBag, Users, Star, MessageCircle, 
     Plus, Edit, Trash2, Eye, CheckCircle, XCircle,
-    Clock, TrendingUp, DollarSign, BarChart3, Image, X, Upload, RefreshCw
+    Clock, TrendingUp, DollarSign, BarChart3, Image, X, Upload, RefreshCw,
+    User, Mail, Phone, MapPin, Building, Filter, Search, Shield, 
+    UserCog, UserPlus, UserX, UserCheck
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -14,13 +16,18 @@ const AdminDashboard = () => {
     const [orders, setOrders] = useState([]);
     const [reviews, setReviews] = useState([]);
     const [inquiries, setInquiries] = useState([]);
+    const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showProductForm, setShowProductForm] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
     const [imageUrls, setImageUrls] = useState([]);
     const [imageInput, setImageInput] = useState('');
-    const [sellerApplications, setSellerApplications] = useState([]);
     const [lastUpdated, setLastUpdated] = useState(new Date());
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [categories, setCategories] = useState([]);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [showUserModal, setShowUserModal] = useState(false);
     const [productForm, setProductForm] = useState({
         name: '',
         description: '',
@@ -37,14 +44,21 @@ const AdminDashboard = () => {
     const loadData = useCallback(async () => {
         try {
             setLoading(true);
-            const [productsData, ordersData] = await Promise.all([
+            const [productsData, ordersData, usersData] = await Promise.all([
                 apiService.getProducts({ per_page: 1000 }),
-                apiService.getOrders().catch(() => ({ orders: [] }))
+                apiService.getOrders().catch(() => ({ orders: [] })),
+                apiService.getAllUsers().catch(() => ({ users: [] }))
             ]);
             
             setProducts(productsData.products || []);
             setOrders(ordersData.orders || []);
+            setUsers(usersData.users || []);
             setLastUpdated(new Date());
+            
+            if (productsData.products) {
+                const uniqueCategories = [...new Set(productsData.products.map(p => p.category).filter(Boolean))];
+                setCategories(uniqueCategories);
+            }
             
             try {
                 const reviewsData = await apiService.getProductReviews(1);
@@ -59,27 +73,6 @@ const AdminDashboard = () => {
             } catch {
                 setInquiries([]);
             }
-            
-            setSellerApplications([
-                {
-                    id: 1,
-                    business_name: 'Tech Solutions Ltd',
-                    business_type: 'limited_company',
-                    email: 'info@techsolutions.com',
-                    phone: '0712345678',
-                    status: 'pending',
-                    submitted_at: new Date().toISOString()
-                },
-                {
-                    id: 2,
-                    business_name: 'Green Living Kenya',
-                    business_type: 'sole_proprietorship',
-                    email: 'greenliving@gmail.com',
-                    phone: '0723456789',
-                    status: 'approved',
-                    submitted_at: new Date().toISOString()
-                }
-            ]);
             
         } catch (error) {
             console.error('Error loading admin data:', error);
@@ -104,7 +97,7 @@ const AdminDashboard = () => {
         if (window.confirm('Are you sure you want to delete this product?')) {
             try {
                 await apiService.deleteProduct(id);
-                await loadData(); // Refresh after deletion
+                await loadData();
                 alert('Product deleted successfully!');
             } catch (error) {
                 console.error('Error deleting product:', error);
@@ -138,11 +131,11 @@ const AdminDashboard = () => {
             
             if (editingProduct) {
                 await apiService.updateProduct(editingProduct.id, data);
-                await loadData(); // Refresh after update
+                await loadData();
                 alert('Product updated successfully!');
             } else {
                 await apiService.createProduct(data);
-                await loadData(); // Refresh after creation
+                await loadData();
                 alert('Product created successfully!');
             }
             resetForm();
@@ -203,7 +196,7 @@ const AdminDashboard = () => {
     const handleUpdateOrderStatus = async (orderId, status) => {
         try {
             await apiService.updateOrderStatus(orderId, status);
-            await loadData(); // Refresh after update
+            await loadData();
         } catch (error) {
             console.error('Error updating order:', error);
         }
@@ -212,9 +205,34 @@ const AdminDashboard = () => {
     const handleReplyToInquiry = async (inquiryId, reply) => {
         try {
             await apiService.replyToInquiry(inquiryId, { reply });
-            await loadData(); // Refresh after reply
+            await loadData();
         } catch (error) {
             console.error('Error replying to inquiry:', error);
+        }
+    };
+
+    const handleUpdateUserRole = async (userId, isAdmin) => {
+        try {
+            await apiService.updateUserRole(userId, isAdmin);
+            await loadData();
+            setShowUserModal(false);
+            alert(`User role updated successfully!`);
+        } catch (error) {
+            console.error('Error updating user role:', error);
+            alert('Failed to update user role. Please try again.');
+        }
+    };
+
+    const handleDeleteUser = async (userId) => {
+        if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+            try {
+                await apiService.deleteUser(userId);
+                await loadData();
+                alert('User deleted successfully!');
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('Failed to delete user. Please try again.');
+            }
         }
     };
 
@@ -243,6 +261,23 @@ const AdminDashboard = () => {
         return '/api/placeholder/100/100';
     };
 
+    // Filter products based on search and category
+    const filteredProducts = products.filter(product => {
+        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            product.category.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = !selectedCategory || product.category === selectedCategory;
+        return matchesSearch && matchesCategory;
+    });
+
+    // Filter users based on search
+    const filteredUsers = users.filter(u => {
+        const search = searchTerm.toLowerCase();
+        return u.email.toLowerCase().includes(search) ||
+               u.first_name.toLowerCase().includes(search) ||
+               u.last_name.toLowerCase().includes(search) ||
+               (u.company_name && u.company_name.toLowerCase().includes(search));
+    });
+
     const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
     const pendingOrders = orders.filter(o => o.status === 'pending').length;
     const totalProducts = products.length;
@@ -258,10 +293,21 @@ const AdminDashboard = () => {
     return (
         <div className="container-custom py-8">
             <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-                    <p className="text-gray-600">Welcome back, {user?.first_name}</p>
-                    <p className="text-sm text-harykims-600">Total Products: {totalProducts}</p>
+                <div className="flex items-center gap-4">
+                    <img 
+                        src="/logo.jpeg" 
+                        alt="Harykims Intertech" 
+                        className="h-12 w-auto object-contain"
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.style.display = 'none';
+                        }}
+                    />
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+                        <p className="text-gray-600">Welcome back, {user?.first_name} {user?.last_name}</p>
+                        <p className="text-sm text-harykims-600">Total Products: {totalProducts} | Total Users: {users.length}</p>
+                    </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <button 
@@ -315,10 +361,10 @@ const AdminDashboard = () => {
                     <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border border-gray-100">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-gray-600">Reviews</p>
-                                <p className="text-2xl font-bold">{reviews.length}</p>
+                                <p className="text-sm text-gray-600">Users</p>
+                                <p className="text-2xl font-bold">{users.length}</p>
                             </div>
-                            <Star className="w-8 h-8 text-yellow-400" />
+                            <Users className="w-8 h-8 text-purple-500" />
                         </div>
                     </div>
                 </div>
@@ -328,7 +374,7 @@ const AdminDashboard = () => {
             <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
                 <div className="border-b overflow-x-auto">
                     <div className="flex">
-                        {['overview', 'products', 'orders', 'reviews', 'inquiries', 'sellers'].map((tab) => (
+                        {['overview', 'products', 'orders', 'reviews', 'inquiries', 'users'].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -345,11 +391,66 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="p-6">
-                    {/* Products Tab */}
+                    {/* Overview Tab */}
+                    {activeTab === 'overview' && (
+                        <div>
+                            <h2 className="text-xl font-semibold mb-4">Quick Overview</h2>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="border rounded-lg p-4">
+                                    <h3 className="font-semibold mb-3">Recent Orders</h3>
+                                    {orders.slice(0, 5).map((order) => (
+                                        <div key={order.id} className="flex justify-between items-center py-2 border-b last:border-0">
+                                            <div>
+                                                <p className="font-medium">Order #{order.order_number || order.id}</p>
+                                                <p className="text-sm text-gray-600">{formatPrice(order.total_amount)}</p>
+                                            </div>
+                                            <span className={`px-2 py-1 rounded-full text-xs ${
+                                                order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                                                order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                                                order.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
+                                                'bg-gray-100 text-gray-800'
+                                            }`}>
+                                                {order.status || 'pending'}
+                                            </span>
+                                        </div>
+                                    ))}
+                                    {orders.length === 0 && (
+                                        <p className="text-gray-500 text-sm">No orders yet</p>
+                                    )}
+                                </div>
+
+                                <div className="border rounded-lg p-4">
+                                    <h3 className="font-semibold mb-3">Recent Reviews</h3>
+                                    {reviews.slice(0, 5).map((review) => (
+                                        <div key={review.id} className="py-2 border-b last:border-0">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium">{review.user_name || 'User'}</span>
+                                                <div className="flex">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star key={i} className={`w-3 h-3 ${
+                                                            i < (review.rating || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                                                        }`} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            {review.comment && (
+                                                <p className="text-sm text-gray-600 truncate">{review.comment}</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                    {reviews.length === 0 && (
+                                        <p className="text-gray-500 text-sm">No reviews yet</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Products Tab - Same as before */}
                     {activeTab === 'products' && (
                         <div>
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-semibold">Manage Products ({products.length})</h2>
+                                <h2 className="text-xl font-semibold">Manage Products ({filteredProducts.length})</h2>
                                 <div className="flex gap-2">
                                     <button
                                         onClick={loadData}
@@ -368,6 +469,34 @@ const AdminDashboard = () => {
                                         <Plus className="w-4 h-4 mr-2" />
                                         Add Product
                                     </button>
+                                </div>
+                            </div>
+
+                            {/* Search and Filter */}
+                            <div className="flex flex-wrap gap-4 mb-4">
+                                <div className="flex-1 min-w-[200px]">
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search products..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-harykims-500 focus:border-harykims-500 outline-none"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <select
+                                        value={selectedCategory}
+                                        onChange={(e) => setSelectedCategory(e.target.value)}
+                                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-harykims-500 focus:border-harykims-500 outline-none"
+                                    >
+                                        <option value="">All Categories</option>
+                                        {categories.map((cat) => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
 
@@ -520,7 +649,7 @@ const AdminDashboard = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
-                                        {products.map((product) => (
+                                        {filteredProducts.map((product) => (
                                             <tr key={product.id} className="hover:bg-gray-50">
                                                 <td className="px-6 py-4">
                                                     <img 
@@ -561,7 +690,7 @@ const AdminDashboard = () => {
                                         ))}
                                     </tbody>
                                 </table>
-                                {products.length === 0 && (
+                                {filteredProducts.length === 0 && (
                                     <div className="text-center py-8 text-gray-500">
                                         <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                                         <p>No products found. Click "Add Product" to create one.</p>
@@ -699,44 +828,223 @@ const AdminDashboard = () => {
                         </div>
                     )}
 
-                    {/* Sellers Tab */}
-                    {activeTab === 'sellers' && (
+                    {/* Users Tab - Full Management */}
+                    {activeTab === 'users' && (
                         <div>
-                            <h2 className="text-xl font-semibold mb-4">Seller Applications</h2>
-                            <div className="space-y-4">
-                                {sellerApplications.map((app) => (
-                                    <div key={app.id} className="border rounded-lg p-4">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <h3 className="font-semibold">{app.business_name}</h3>
-                                                <p className="text-sm text-gray-600">Type: {app.business_type}</p>
-                                                <p className="text-sm text-gray-600">Email: {app.email}</p>
-                                                <p className="text-sm text-gray-600">Phone: {app.phone}</p>
-                                                <p className="text-xs text-gray-500">Submitted: {new Date(app.submitted_at).toLocaleString()}</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <span className={`px-2 py-1 rounded-full text-xs ${
-                                                    app.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                                    app.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                                    'bg-yellow-100 text-yellow-800'
-                                                }`}>
-                                                    {app.status}
-                                                </span>
-                                                {app.status === 'pending' && (
-                                                    <div className="mt-2 flex gap-2">
-                                                        <button onClick={() => handleSellerApplication(app.id, 'approved')} className="text-green-600 hover:text-green-800 text-sm flex items-center gap-1">
-                                                            <CheckCircle className="w-4 h-4" /> Approve
-                                                        </button>
-                                                        <button onClick={() => handleSellerApplication(app.id, 'rejected')} className="text-red-600 hover:text-red-800 text-sm flex items-center gap-1">
-                                                            <XCircle className="w-4 h-4" /> Reject
-                                                        </button>
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-semibold">Users Management ({filteredUsers.length})</h2>
+                                <div className="flex gap-2">
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search users..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-harykims-500 focus:border-harykims-500 outline-none"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={loadData}
+                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+                                    >
+                                        <RefreshCw className="w-4 h-4" />
+                                        Refresh
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Company</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {filteredUsers.map((u) => (
+                                            <tr key={u.id} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 bg-harykims-100 rounded-full flex items-center justify-center">
+                                                            <User className="w-5 h-5 text-harykims-600" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-gray-900">{u.first_name} {u.last_name}</p>
+                                                            <p className="text-xs text-gray-500">ID: #{u.id}</p>
+                                                        </div>
                                                     </div>
-                                                )}
+                                                </td>
+                                                <td className="px-6 py-4 text-gray-600">{u.email}</td>
+                                                <td className="px-6 py-4 text-gray-600">{u.company_name || '-'}</td>
+                                                <td className="px-6 py-4 text-gray-600">{u.phone || '-'}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                                        u.is_admin ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'
+                                                    }`}>
+                                                        {u.is_admin ? 'Administrator' : 'Customer'}
+                                                    </span>
+                                                    {u.is_verified && (
+                                                        <span className="ml-1 px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                                                            ✓ Verified
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4 text-gray-500 text-sm">
+                                                    {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedUser(u);
+                                                                setShowUserModal(true);
+                                                            }}
+                                                            className="text-harykims-600 hover:text-harykims-800"
+                                                            title="Edit User"
+                                                        >
+                                                            <UserCog className="w-4 h-4" />
+                                                        </button>
+                                                        {u.id !== user?.id && (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => handleUpdateUserRole(u.id, !u.is_admin)}
+                                                                    className={`${
+                                                                        u.is_admin ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'
+                                                                    }`}
+                                                                    title={u.is_admin ? 'Remove Admin' : 'Make Admin'}
+                                                                >
+                                                                    {u.is_admin ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDeleteUser(u.id)}
+                                                                    className="text-red-600 hover:text-red-800"
+                                                                    title="Delete User"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                {filteredUsers.length === 0 && (
+                                    <div className="text-center py-8 text-gray-500">
+                                        <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                                        <p>No users found.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* User Detail Modal */}
+                            {showUserModal && selectedUser && (
+                                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                                    <div className="bg-white rounded-xl shadow-xl p-8 max-w-2xl w-full mx-4">
+                                        <div className="flex justify-between items-start mb-6">
+                                            <h3 className="text-2xl font-bold text-gray-900">User Details</h3>
+                                            <button
+                                                onClick={() => setShowUserModal(false)}
+                                                className="text-gray-400 hover:text-gray-600"
+                                            >
+                                                <X className="w-6 h-6" />
+                                            </button>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4 mb-6">
+                                            <div>
+                                                <label className="text-sm text-gray-500">Full Name</label>
+                                                <p className="font-medium">{selectedUser.first_name} {selectedUser.last_name}</p>
+                                            </div>
+                                            <div>
+                                                <label className="text-sm text-gray-500">Email</label>
+                                                <p className="font-medium">{selectedUser.email}</p>
+                                            </div>
+                                            <div>
+                                                <label className="text-sm text-gray-500">Company</label>
+                                                <p className="font-medium">{selectedUser.company_name || 'Not provided'}</p>
+                                            </div>
+                                            <div>
+                                                <label className="text-sm text-gray-500">Phone</label>
+                                                <p className="font-medium">{selectedUser.phone || 'Not provided'}</p>
+                                            </div>
+                                            <div>
+                                                <label className="text-sm text-gray-500">Address</label>
+                                                <p className="font-medium">{selectedUser.address || 'Not provided'}</p>
+                                            </div>
+                                            <div>
+                                                <label className="text-sm text-gray-500">Member Since</label>
+                                                <p className="font-medium">
+                                                    {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString() : 'N/A'}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label className="text-sm text-gray-500">Role</label>
+                                                <p className="font-medium">
+                                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                                        selectedUser.is_admin ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'
+                                                    }`}>
+                                                        {selectedUser.is_admin ? 'Administrator' : 'Customer'}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <label className="text-sm text-gray-500">Status</label>
+                                                <p className="font-medium">
+                                                    <span className={`px-2 py-1 rounded-full text-xs ${
+                                                        selectedUser.is_verified ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                                    }`}>
+                                                        {selectedUser.is_verified ? 'Verified' : 'Unverified'}
+                                                    </span>
+                                                </p>
                                             </div>
                                         </div>
+
+                                        <div className="flex gap-3 border-t pt-6">
+                                            {selectedUser.id !== user?.id && (
+                                                <>
+                                                    <button
+                                                        onClick={() => {
+                                                            handleUpdateUserRole(selectedUser.id, !selectedUser.is_admin);
+                                                        }}
+                                                        className={`flex-1 py-2 rounded-lg font-medium ${
+                                                            selectedUser.is_admin 
+                                                                ? 'bg-red-600 hover:bg-red-700 text-white' 
+                                                                : 'bg-harykims-600 hover:bg-harykims-700 text-white'
+                                                        }`}
+                                                    >
+                                                        {selectedUser.is_admin ? 'Remove Admin' : 'Make Admin'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            if (window.confirm(`Are you sure you want to delete user ${selectedUser.first_name} ${selectedUser.last_name}?`)) {
+                                                                handleDeleteUser(selectedUser.id);
+                                                            }
+                                                        }}
+                                                        className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium"
+                                                    >
+                                                        Delete User
+                                                    </button>
+                                                </>
+                                            )}
+                                            <button
+                                                onClick={() => setShowUserModal(false)}
+                                                className="flex-1 border border-gray-300 hover:bg-gray-50 py-2 rounded-lg font-medium"
+                                            >
+                                                Close
+                                            </button>
+                                        </div>
                                     </div>
-                                ))}
-                            </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
