@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://caterer-unarmored-chunk.ngrok-free.dev/api';
 
 class ApiService {
     constructor() {
@@ -21,7 +21,8 @@ class ApiService {
             'Content-Type': 'application/json',
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Pragma': 'no-cache',
-            'Expires': '0'
+            'Expires': '0',
+            'ngrok-skip-browser-warning': 'true'  // Skip ngrok warning page
         };
         if (this.token) {
             headers['Authorization'] = `Bearer ${this.token}`;
