@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://caterer-unarmored-chunk.ngrok-free.dev/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://hk-backend-1.onrender.com';
 
 class ApiService {
     constructor() {
