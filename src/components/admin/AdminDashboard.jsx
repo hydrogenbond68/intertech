@@ -106,6 +106,38 @@ const AdminDashboard = () => {
         }
     };
 
+    // --- NEW: Handle local image upload ---
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Check file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image size must be less than 5MB');
+            e.target.value = '';
+            return;
+        }
+
+        // Check file type
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            e.target.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const base64Data = event.target.result; // This is a data URL
+            setImageUrls(prev => [...prev, base64Data]);
+            e.target.value = ''; // Reset input
+        };
+        reader.onerror = (error) => {
+            console.error('Error reading file:', error);
+            alert('Failed to read image file');
+        };
+        reader.readAsDataURL(file);
+    };
+
     const handleAddImage = () => {
         if (imageInput.trim()) {
             setImageUrls([...imageUrls, imageInput.trim()]);
@@ -446,7 +478,7 @@ const AdminDashboard = () => {
                         </div>
                     )}
 
-                    {/* Products Tab - Same as before */}
+                    {/* Products Tab */}
                     {activeTab === 'products' && (
                         <div>
                             <div className="flex justify-between items-center mb-4">
@@ -561,10 +593,26 @@ const AdminDashboard = () => {
                                             />
                                         </div>
 
-                                        {/* Image Management */}
+                                        {/* Image Management with Local Upload */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Product Images</label>
-                                            <div className="flex gap-2 mb-2">
+                                            
+                                            {/* File upload from local computer */}
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <label className="flex-1 cursor-pointer">
+                                                    <div className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-harykims-300 rounded-lg hover:border-harykims-500 transition-colors">
+                                                        <Upload className="w-5 h-5 text-harykims-600" />
+                                                        <span className="text-sm text-gray-600">Choose images from computer</span>
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            multiple
+                                                            onChange={handleImageUpload}
+                                                            className="hidden"
+                                                        />
+                                                    </div>
+                                                </label>
+                                                <span className="text-xs text-gray-500">or</span>
                                                 <input
                                                     type="url"
                                                     placeholder="Enter image URL"
@@ -578,7 +626,7 @@ const AdminDashboard = () => {
                                                     className="btn-primary flex items-center"
                                                 >
                                                     <Plus className="w-4 h-4 mr-1" />
-                                                    Add
+                                                    Add URL
                                                 </button>
                                             </div>
                                             
@@ -605,7 +653,7 @@ const AdminDashboard = () => {
                                                     ))}
                                                 </div>
                                             )}
-                                            <p className="text-xs text-gray-500 mt-1">Add image URLs for your product (3-5 images recommended)</p>
+                                            <p className="text-xs text-gray-500 mt-1">Upload images from your computer or add image URLs (3-5 images recommended)</p>
                                         </div>
 
                                         <div className="flex items-center gap-4">
@@ -828,7 +876,7 @@ const AdminDashboard = () => {
                         </div>
                     )}
 
-                    {/* Users Tab - Full Management */}
+                    {/* Users Tab */}
                     {activeTab === 'users' && (
                         <div>
                             <div className="flex justify-between items-center mb-4">
