@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://hk-backend-1.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 class ApiService {
     constructor() {
