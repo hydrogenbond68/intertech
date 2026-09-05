@@ -1,5 +1,6 @@
-export default async (event) => {
-  const path = (event.path || '').replace(/^\/\.netlify\/functions\/proxy/, '');
+export default async (event, context) => {
+  const rawPath = event.path || '';
+  const path = rawPath.replace(/^\/\.netlify\/functions\/proxy/, '');
   const queryString = event.rawQuery ? `?${event.rawQuery}` : '';
   const targetUrl = `https://hk-backend-1.onrender.com${path}${queryString}`;
 
@@ -20,21 +21,19 @@ export default async (event) => {
     const response = await fetch(targetUrl, options);
     const body = await response.text();
 
-    return {
-      statusCode: response.status,
+    return new Response(body, {
+      status: response.status,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cache-Control, Pragma, Expires, ngrok-skip-browser-warning',
         'Content-Type': response.headers.get('Content-Type') || 'application/json',
       },
-      body,
-    };
+    });
   } catch (err) {
-    return {
-      statusCode: 502,
-      headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ error: 'Proxy error', message: err.message }),
-    };
+    return new Response(JSON.stringify({ error: 'Proxy error', message: err.message }), {
+      status: 502,
+      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+    });
   }
 };
