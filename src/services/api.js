@@ -40,7 +40,7 @@ class ApiService {
             const separator = url.includes('?') ? '&' : '?';
             url = `${url}${separator}${this.getCacheBuster()}`;
         }
-        
+
         const config = {
             ...options,
             headers: {
@@ -49,23 +49,37 @@ class ApiService {
             },
         };
 
+        console.log(`[API] → ${config.method || 'GET'} ${url}`);
+        const startTime = Date.now();
+
         try {
             const response = await fetch(url, config);
-            const data = await response.json();
+            const duration = Date.now() - startTime;
+            console.log(`[API] ← ${response.status} ${url} (${duration}ms)`);
+
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonErr) {
+                console.error(`[API] Invalid JSON response from ${url}:`, jsonErr);
+                throw new Error(`Invalid response from server (${response.status})`);
+            }
 
             if (!response.ok) {
+                console.error(`[API] Error ${response.status} from ${url}:`, data);
                 if (response.status === 401) {
                     this.setToken(null);
                     if (!window.location.pathname.includes('/login')) {
                         window.location.href = '/login';
                     }
                 }
-                throw new Error(data.error || 'API request failed');
+                throw new Error(data.error || `API request failed (${response.status})`);
             }
 
             return data;
         } catch (error) {
-            console.error('API Error:', error);
+            const duration = Date.now() - startTime;
+            console.error(`[API] ✗ Failed ${url} (${duration}ms):`, error.message);
             throw error;
         }
     }
