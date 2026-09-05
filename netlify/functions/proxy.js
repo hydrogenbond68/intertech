@@ -1,9 +1,9 @@
 export default async (event) => {
-  const path = event.path.replace(/^\/\.netlify\/functions\/proxy/, '');
+  const path = (event.path || '').replace(/^\/\.netlify\/functions\/proxy/, '');
   const queryString = event.rawQuery ? `?${event.rawQuery}` : '';
   const targetUrl = `https://hk-backend-1.onrender.com${path}${queryString}`;
 
-  const headers = {};
+  const headers = { 'Accept': 'application/json' };
   if (event.headers['content-type']) headers['Content-Type'] = event.headers['content-type'];
   if (event.headers.authorization) headers['Authorization'] = event.headers.authorization;
 
