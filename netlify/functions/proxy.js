@@ -1,4 +1,4 @@
-exports.handler = async (event) => {
+export default async (event) => {
   const path = event.path.replace(/^\/\.netlify\/functions\/proxy/, '');
   const queryString = event.rawQuery ? `?${event.rawQuery}` : '';
   const targetUrl = `https://hk-backend-1.onrender.com${path}${queryString}`;
