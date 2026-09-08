@@ -8,3 +8,8 @@
   to = "/.netlify/functions/proxy/:splat"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/.netlify/functions/hello"
+  to = "/.netlify/functions/hello"
+  status = 200
