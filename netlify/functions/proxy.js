@@ -1,7 +1,9 @@
 export default async (event) => {
-  const path = (event.query?.path || '').replace(/^\/api/, '');
-  const originalQuery = event.rawQuery || '';
-  const queryString = originalQuery ? `?${originalQuery}` : '';
+  const rawQuery = event.rawQuery || '';
+  const pathMatch = rawQuery.match(/path=([^&]*)/);
+  const path = pathMatch ? decodeURIComponent(pathMatch[1]) : '';
+  const remainingQuery = rawQuery.replace(/&?path=[^&]*/, '').replace(/^\?/, '');
+  const queryString = remainingQuery ? `?${remainingQuery}` : '';
   const targetUrl = `https://hk-backend-1.onrender.com/api${path}${queryString}`;
 
   const headers = { 'Accept': 'application/json' };
@@ -31,7 +33,7 @@ export default async (event) => {
       },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: 'Proxy error', message: err.message }), {
+    return new Response(JSON.stringify({ error: 'Proxy error', message: err.message, targetUrl }), {
       status: 502,
       headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
     });
