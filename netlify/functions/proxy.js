@@ -1,9 +1,7 @@
 export default async (event) => {
-  const rawQuery = event.rawQuery || '';
-  const pathMatch = rawQuery.match(/path=([^&]*)/);
-  const path = pathMatch ? decodeURIComponent(pathMatch[1]) : '';
-  const remainingQuery = rawQuery.replace(/&?path=[^&]*/, '').replace(/^\?/, '');
-  const queryString = remainingQuery ? `?${remainingQuery}` : '';
+  const rawPath = event.rawPath || event.path || '';
+  const path = rawPath.replace(/^\/\.netlify\/functions\/proxy/, '');
+  const queryString = event.rawQuery ? `?${event.rawQuery}` : '';
   const targetUrl = `https://hk-backend-1.onrender.com/api${path}${queryString}`;
 
   const headers = { 'Accept': 'application/json' };
@@ -33,7 +31,7 @@ export default async (event) => {
       },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: 'Proxy error', message: err.message, targetUrl }), {
+    return new Response(JSON.stringify({ error: 'Proxy error', message: err.message, targetUrl, rawPath, path }), {
       status: 502,
       headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
     });
