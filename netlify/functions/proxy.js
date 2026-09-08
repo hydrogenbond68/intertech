@@ -1,8 +1,8 @@
-export default async (event, context) => {
-  const rawPath = event.path || '';
-  const path = rawPath.replace(/^\/\.netlify\/functions\/proxy/, '');
-  const queryString = event.rawQuery ? `?${event.rawQuery}` : '';
-  const targetUrl = `https://hk-backend-1.onrender.com${path}${queryString}`;
+export default async (event) => {
+  const path = (event.query?.path || '').replace(/^\/api/, '');
+  const originalQuery = event.rawQuery || '';
+  const queryString = originalQuery ? `?${originalQuery}` : '';
+  const targetUrl = `https://hk-backend-1.onrender.com/api${path}${queryString}`;
 
   const headers = { 'Accept': 'application/json' };
   if (event.headers['content-type']) headers['Content-Type'] = event.headers['content-type'];
@@ -26,7 +26,7 @@ export default async (event, context) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cache-Control, Pragma, Expires, ngrok-skip-browser-warning',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         'Content-Type': response.headers.get('Content-Type') || 'application/json',
       },
     });
